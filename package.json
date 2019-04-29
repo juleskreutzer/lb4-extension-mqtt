@@ -1,10 +1,13 @@
 {
   "name": "lb4-extension-mqtt",
-  "version": "1.0.0",
+  "version": "0.1",
   "description": "LoopBack 4 MQTT Extension",
   "keywords": [
     "loopback-extension",
-    "loopback"
+    "loopback",
+    "MQTT",
+    "loopback 4",
+    "lb4"
   ],
   "main": "index.js",
   "engines": {
@@ -29,10 +32,11 @@
     "prepublishOnly": "npm run test"
   },
   "repository": {
-    "type": "git"
+    "type": "git",
+    "url": "https://github.com/juleskreutzer/lb4-extension-mqtt"
   },
-  "author": "",
-  "license": "",
+  "author": "Jules Kreutzer | Appelticket",
+  "license": "MIT",
   "files": [
     "README.md",
     "index.js",
