@@ -1,28 +1,36 @@
-import {Server, CoreBindings, Application} from '@loopback/core';
-import {Context, inject} from '@loopback/context';
-import {MqttBinding} from './MqttBindingKeys';
+import {
+  /* inject, Application, CoreBindings, */
+  lifeCycleObserver, // The decorator
+  CoreTags,
+  LifeCycleObserver,
+  inject,
+  CoreBindings,
+  Application, // The interface
+} from '@loopback/core';
+import {MqttServerConfig, RabbitMQConfig} from '../types';
+import {MqttBinding} from '../MqttBindingKeys';
 import {Broker} from 'typescript-rabbitmq';
-import {MqttServerConfig, RabbitMQConfig} from './types';
 import {Message} from 'amqplib';
-import {MessageStore} from './store/message.store';
+import {MessageStore} from '../store';
 
-export class MqttServer extends Context implements Server {
-  private _listening: boolean;
-  private config: RabbitMQConfig;
+/**
+ * This class will be bound to the application as a `LifeCycleObserver` during
+ * `boot`
+ */
+@lifeCycleObserver('')
+export class MqttObserver implements LifeCycleObserver {
+  private _config: RabbitMQConfig;
 
   constructor(
-    @inject(CoreBindings.APPLICATION_INSTANCE) protected app: Application,
+    @inject(CoreBindings.APPLICATION_INSTANCE) private app: Application,
     @inject(MqttBinding.CONFIG) protected mqttConfig: MqttServerConfig,
     @inject(MqttBinding.MQTT_BROKER) protected broker: Broker,
     @inject(MqttBinding.MQTT_EXCHANGE) protected exchange: string,
     @inject(MqttBinding.MQTT_QUEUE) protected queue: string,
   ) {
-    super(app);
-
     this.checkConfiguration();
 
-    // setup Broker config
-    this.config = {
+    this._config = {
       connection: {
         user: this.mqttConfig.user,
         pass: this.mqttConfig.pass,
@@ -61,14 +69,14 @@ export class MqttServer extends Context implements Server {
       },
     };
 
-    this.broker = new Broker(this.config);
+    this.broker = new Broker(this._config);
   }
 
-  public get listening() {
-    return this._listening;
-  }
-
+  /**
+   * This method will be invoked when the application starts
+   */
   async start(): Promise<void> {
+    // Add your logic for start
     await this.broker.connect();
 
     this.broker.addConsume(this.queue, this.onNewMessage.bind(this));
@@ -78,12 +86,15 @@ export class MqttServer extends Context implements Server {
     MessageStore.getInstance().pushMessage(message);
   }
 
+  /**
+   * This method will be invoked when the application stops
+   */
   async stop(): Promise<void> {
+    // Add your logic for start
     await this.broker.close();
   }
 
   checkConfiguration() {
-    // Don't check for broker since it's instantiated in this class
     if (!this.exchange) {
       console.error('MQTT Exchange not set');
       process.exit();

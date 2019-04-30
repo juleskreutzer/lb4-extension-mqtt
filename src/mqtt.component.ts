@@ -7,10 +7,10 @@ import {
 } from '@loopback/core';
 import {inject, Constructor} from '@loopback/context';
 import {MqttBinding} from './MqttBindingKeys';
-import {MqttServer} from './mqtt.server';
 import {MqttSequence} from './mqtt.sequence';
 import {MqttServerConfig} from './types';
 import {MqttProvider} from './providers/mqtt.provider';
+import {MqttObserver} from './observers';
 
 export class MqttComponent implements Component {
   constructor(
@@ -30,7 +30,7 @@ export class MqttComponent implements Component {
     //   .toClass(config.sequence || MqttSequence);
   }
 
-  servers: {[name: string]: Constructor<Server>} = {MqttServer};
+  lifeCycleObservers = [MqttObserver];
 
   providers?: ProviderMap = {
     [MqttBinding.MQTT_PROVIDER.key]: MqttProvider,
