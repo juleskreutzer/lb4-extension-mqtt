@@ -19,6 +19,8 @@ export class MqttServer extends Context implements Server {
   ) {
     super(app);
 
+    this.checkConfiguration();
+
     // setup Broker config
     this.config = {
       connection: {
@@ -76,5 +78,19 @@ export class MqttServer extends Context implements Server {
     MessageStore.getInstance().pushMessage(message);
   }
 
-  async stop(): Promise<void> {}
+  async stop(): Promise<void> {
+    await this.broker.close();
+  }
+
+  checkConfiguration() {
+    // Don't check for broker since it's instantiated in this class
+    if (!this.exchange) {
+      console.error('MQTT Exchange not set');
+      process.exit();
+    }
+    if (!this.queue) {
+      console.error('MQTT Queue not set');
+      process.exit();
+    }
+  }
 }

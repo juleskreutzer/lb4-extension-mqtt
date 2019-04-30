@@ -63,3 +63,7 @@ api-docs/
 # Transpiled JavaScript files from Typescript
 /dist10
 /dist
+
+#IDE
+.idea
+.vscode

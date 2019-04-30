@@ -1,6 +1,6 @@
 {
   "name": "lb4-extension-mqtt",
-  "version": "0.1",
+  "version": "0.0.3",
   "description": "LoopBack 4 MQTT Extension",
   "keywords": [
     "loopback-extension",
@@ -25,11 +25,7 @@
     "prettier:fix": "npm run prettier:cli -- --write",
     "tslint": "lb-tslint",
     "tslint:fix": "npm run tslint -- --fix",
-    "pretest": "npm run clean && npm run build",
-    "test": "lb-mocha --allow-console-logs \"dist10/__tests__\"",
-    "posttest": "npm run lint",
-    "test:dev": "lb-mocha --allow-console-logs dist10/__tests__/**/*.js && npm run posttest",
-    "prepublishOnly": "npm run test"
+    "publish": "npm publish --access public"
   },
   "repository": {
     "type": "git",
