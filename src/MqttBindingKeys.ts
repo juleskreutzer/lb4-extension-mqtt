@@ -12,7 +12,7 @@ export namespace MqttBinding {
   export const MQTT_EXCHANGE = BindingKey.create<string>('mqtt.exchange');
   export const MQTT_QUEUE = BindingKey.create<string>('mqtt.queue');
 
-  export const CONFIG = `${CoreBindings.APPLICATION_CONFIG}#mqtt`;
+  export const CONFIG = `${CoreBindings.APPLICATION_CONFIG}.mqtt`;
   export const MQTT_SEQUENCE = BindingKey.create<IMqttSequence>(
     'mqtt.sequence',
   );
