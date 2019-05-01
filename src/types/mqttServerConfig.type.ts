@@ -1,5 +1,4 @@
 export type MqttServerConfig = {
-  port: number;
   host: string;
   user: string;
   pass: string;

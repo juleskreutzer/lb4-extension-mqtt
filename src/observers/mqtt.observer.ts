@@ -7,7 +7,7 @@ import {
   CoreBindings,
   Application, // The interface
 } from '@loopback/core';
-import {MqttServerConfig, RabbitMQConfig} from '../types';
+import {MqttServerConfig} from '../types';
 import {MqttBinding} from '../MqttBindingKeys';
 import {Message} from 'amqplib';
 import {MessageStore} from '../store';
@@ -19,7 +19,6 @@ import * as Amqp from 'amqp-ts';
  */
 @lifeCycleObserver('')
 export class MqttObserver implements LifeCycleObserver {
-  private _config: RabbitMQConfig;
   private _connection: Amqp.Connection;
 
   constructor(
@@ -37,10 +36,10 @@ export class MqttObserver implements LifeCycleObserver {
       this.mqttConfig.pass +
       '@' +
       this.mqttConfig.host +
-      ':' +
-      this.mqttConfig.port +
       '/' +
       this.mqttConfig.vhost;
+
+    console.info(`[lb4-extension-mqtt] Will connect to ${url}`);
 
     this._connection = new Amqp.Connection(url);
   }
@@ -62,9 +61,11 @@ export class MqttObserver implements LifeCycleObserver {
       MessageStore.getInstance().pushMessage(message);
     });
 
-    this._connection.completeConfiguration().catch(error => {
-      throw new Error(error);
-      process.exit();
+    this._connection.completeConfiguration().then(() => {
+      // the following message will be received because
+      // everything you defined earlier for this connection now exists
+      var msg2 = new Amqp.Message('{"hello": "world"}');
+      exchange.send(msg2);
     });
   }
 

@@ -1,6 +1,6 @@
 {
   "name": "lb4-extension-mqtt",
-  "version": "0.2.0",
+  "version": "0.2.0-2",
   "description": "LoopBack 4 MQTT Extension",
   "keywords": [
     "loopback-extension",

@@ -8,4 +8,4 @@ export {MqttProvider} from './providers';
 
 export {MessageStore} from './store';
 
-export {MqttServerConfig, RabbitMQConfig} from './types';
+export {MqttServerConfig} from './types';
