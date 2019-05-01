@@ -13,16 +13,8 @@ import {MqttProvider} from './providers/mqtt.provider';
 import {MqttObserver} from './observers';
 
 export class MqttComponent implements Component {
-  constructor(
-    @inject(CoreBindings.APPLICATION_INSTANCE) app: Application,
-    @inject(MqttBinding.CONFIG) public config: MqttServerConfig,
-  ) {
+  constructor(@inject(MqttBinding.CONFIG) public config: MqttServerConfig) {
     this.checkConfiguration();
-
-    app.bind(MqttBinding.MQTT_HOST).to(config.host);
-    app.bind(MqttBinding.MQTT_PORT).to(config.port);
-    app.bind(MqttBinding.MQTT_USER).to(config.user);
-    app.bind(MqttBinding.MQTT_PASS).to(config.pass);
 
     // A sequence will process every request made
     // app
@@ -51,6 +43,14 @@ export class MqttComponent implements Component {
     }
     if (!this.config.user) {
       console.error('MQTT User not set');
+      process.exit();
+    }
+    if (!this.config.protocol) {
+      console.error('MQTT Protocol not set');
+      process.exit();
+    }
+    if (!this.config.vhost) {
+      console.error('MQTT Vhost not set');
       process.exit();
     }
   }

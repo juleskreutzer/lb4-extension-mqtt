@@ -9,9 +9,9 @@ import {
 } from '@loopback/core';
 import {MqttServerConfig, RabbitMQConfig} from '../types';
 import {MqttBinding} from '../MqttBindingKeys';
-import {Broker} from 'typescript-rabbitmq';
 import {Message} from 'amqplib';
 import {MessageStore} from '../store';
+import * as Amqp from 'amqp-ts';
 
 /**
  * This class will be bound to the application as a `LifeCycleObserver` during
@@ -20,7 +20,7 @@ import {MessageStore} from '../store';
 @lifeCycleObserver('')
 export class MqttObserver implements LifeCycleObserver {
   private _config: RabbitMQConfig;
-  private _broker: Broker;
+  private _connection: Amqp.Connection;
 
   constructor(
     @inject(CoreBindings.APPLICATION_INSTANCE) private app: Application,
@@ -30,60 +30,41 @@ export class MqttObserver implements LifeCycleObserver {
   ) {
     this.checkConfiguration();
 
-    this._config = {
-      connection: {
-        user: this.mqttConfig.user,
-        pass: this.mqttConfig.pass,
-        host: this.mqttConfig.host,
-        port: this.mqttConfig.port,
-        timeout: 2000,
-        name: 'rabbitmq',
-      },
-      exchanges: [
-        {
-          name: this.exchange,
-          type: 'topic',
-          options: {publishTimeout: 1000, persistent: true, durable: false},
-        },
-      ],
-      queues: [
-        {
-          name: this.queue,
-          options: {limit: 1000, queueLimit: 1000},
-        },
-      ],
-      binding: [
-        {
-          exchange: this.exchange,
-          target: this.queue,
-          keys: 'lb4',
-        },
-      ],
-      logging: {
-        adapters: {
-          stdOut: {
-            level: 3,
-            bailIfDebug: false,
-          },
-        },
-      },
-    };
+    const url =
+      this.mqttConfig.protocol +
+      this.mqttConfig.user +
+      ':' +
+      this.mqttConfig.pass +
+      '@' +
+      this.mqttConfig.host +
+      ':' +
+      this.mqttConfig.port +
+      '/' +
+      this.mqttConfig.vhost;
 
-    this._broker = new Broker(this._config);
+    this._connection = new Amqp.Connection(url);
   }
 
   /**
    * This method will be invoked when the application starts
    */
   async start(): Promise<void> {
-    // Add your logic for start
-    console.info('Connecting to broker...');
-    await this._broker.connect();
-    console.info('Connected to broker!');
+    // // Add your logic for start
 
-    this._broker.addConsume(this.queue, (message: Message) => {
-      console.info('Received message: message');
+    let exchange: Amqp.Exchange = this._connection.declareExchange(
+      this.exchange,
+    );
+    let queue: Amqp.Queue = this._connection.declareQueue(this.queue);
+    queue.bind(exchange);
+
+    queue.activateConsumer((message: Message) => {
+      console.info('Received message', message.content);
       MessageStore.getInstance().pushMessage(message);
+    });
+
+    this._connection.completeConfiguration().catch(error => {
+      throw new Error(error);
+      process.exit();
     });
   }
 
@@ -92,7 +73,7 @@ export class MqttObserver implements LifeCycleObserver {
    */
   async stop(): Promise<void> {
     // Add your logic for start
-    await this._broker.close();
+    await this._connection.close();
   }
 
   checkConfiguration() {
