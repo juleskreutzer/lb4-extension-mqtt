@@ -67,3 +67,6 @@ api-docs/
 #IDE
 .idea
 .vscode
+
+# exlude test project
+/test
