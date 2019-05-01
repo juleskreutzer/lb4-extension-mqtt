@@ -20,11 +20,11 @@ import {MessageStore} from '../store';
 @lifeCycleObserver('')
 export class MqttObserver implements LifeCycleObserver {
   private _config: RabbitMQConfig;
+  private _broker: Broker;
 
   constructor(
     @inject(CoreBindings.APPLICATION_INSTANCE) private app: Application,
     @inject(MqttBinding.CONFIG) protected mqttConfig: MqttServerConfig,
-    @inject(MqttBinding.MQTT_BROKER) protected broker: Broker,
     @inject(MqttBinding.MQTT_EXCHANGE) protected exchange: string,
     @inject(MqttBinding.MQTT_QUEUE) protected queue: string,
   ) {
@@ -69,7 +69,7 @@ export class MqttObserver implements LifeCycleObserver {
       },
     };
 
-    this.broker = new Broker(this._config);
+    this._broker = new Broker(this._config);
   }
 
   /**
@@ -77,13 +77,14 @@ export class MqttObserver implements LifeCycleObserver {
    */
   async start(): Promise<void> {
     // Add your logic for start
-    await this.broker.connect();
+    console.info('Connecting to broker...');
+    await this._broker.connect();
+    console.info('Connected to broker!');
 
-    this.broker.addConsume(this.queue, this.onNewMessage.bind(this));
-  }
-
-  onNewMessage(message: Message) {
-    MessageStore.getInstance().pushMessage(message);
+    this._broker.addConsume(this.queue, (message: Message) => {
+      console.info('Received message: message');
+      MessageStore.getInstance().pushMessage(message);
+    });
   }
 
   /**
@@ -91,7 +92,7 @@ export class MqttObserver implements LifeCycleObserver {
    */
   async stop(): Promise<void> {
     // Add your logic for start
-    await this.broker.close();
+    await this._broker.close();
   }
 
   checkConfiguration() {
