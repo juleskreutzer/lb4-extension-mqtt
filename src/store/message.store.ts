@@ -1,8 +1,7 @@
-import {Message} from 'amqplib';
-
+import * as Amqp from 'amqp-ts';
 export class MessageStore {
   private static _instance: MessageStore;
-  private messageList: Message[];
+  private messageList: Amqp.Message[];
 
   private constructor() {
     this.messageList = [];
@@ -16,13 +15,13 @@ export class MessageStore {
     return MessageStore._instance;
   }
 
-  pushMessage(message: Message) {
+  pushMessage(message: Amqp.Message) {
     this.messageList.push(message);
   }
 
-  retrieveMessages(): Message[] {
+  retrieveMessages(): Amqp.Message[] {
     // Place the current messages in a temporary value
-    const temp: Message[] = this.messageList;
+    const temp: Amqp.Message[] = this.messageList;
 
     // consider that all messages will be handled after they are returned by this method.
     // We won't need to save the messages, so we can delete them

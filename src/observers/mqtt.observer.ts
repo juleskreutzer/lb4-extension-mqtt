@@ -9,7 +9,6 @@ import {
 } from '@loopback/core';
 import {MqttServerConfig} from '../types';
 import {MqttBinding} from '../MqttBindingKeys';
-import {Message} from 'amqplib';
 import {MessageStore} from '../store';
 import * as Amqp from 'amqp-ts';
 
@@ -56,7 +55,7 @@ export class MqttObserver implements LifeCycleObserver {
     let queue: Amqp.Queue = this._connection.declareQueue(this.queue);
     queue.bind(exchange);
 
-    queue.activateConsumer((message: Message) => {
+    queue.activateConsumer((message: Amqp.Message) => {
       console.info('Received message', message.content);
       MessageStore.getInstance().pushMessage(message);
     });
